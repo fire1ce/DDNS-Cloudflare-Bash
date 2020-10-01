@@ -16,7 +16,7 @@ Cloudflare's options proxy and TTL configurable via the parameters.
 ## Installation
 
 ```bash
-wget https://raw.githubusercontent.com/fire1ce/cloudflareDDNS/master/updateDNS.sh
+wget https://raw.githubusercontent.com/fire1ce/cloudflareDDN/main/updateDNS.sh
 sudo chmod +x updateDNS.sh
 sudo mv updateDNS.sh /usr/local/bin/updateDNS
 ```
