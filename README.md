@@ -68,6 +68,12 @@ Run at boot
 @reboot /usr/local/bin/updateDNS
 ```
 
+Run 1 minute fater boot
+
+```bash
+@reboot sleep 60 && /usr/local/bin/updateDNS
+```
+
 Run at 08:00
 
 ```bash
