@@ -34,7 +34,6 @@ else
             ip=$(ip -o -4 addr show ${what_interface} scope global | awk '{print $4;}' | cut -d/ -f 1)
         else
             ip=$(ifconfig ${what_interface} | grep 'inet ' | awk '{print $2}')
-            echo $ip
         fi
     else
         echo "missin or incorret whichip parameter"
