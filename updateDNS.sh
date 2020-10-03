@@ -13,7 +13,7 @@ proxied="false"                                                 ##### Use Cloudf
 ttl=120                                                         ##### 120-7200 in seconds or 1 for Auto
 cloudflare_api_token="x8AJcit__Change-ME__oDE_UkLo3XsoafAE3zZ4" ##### loudflare API Token keep it private!!!!
 
-##### .updateDDNS.log file of the last run for debug
+##### .updateDNS.log file of the last run for debug
 parent_path="$(dirname "${BASH_SOURCE[0]}")"
 FILE=${parent_path}/.updateDNS.log
 if ! [ -x "$FILE" ]; then
@@ -35,7 +35,7 @@ else
             ip=$(ifconfig ${what_interface} | grep 'inet ' | awk '{print $2}')
         fi
     else
-        echo "missin or incorret what_ip parameter"
+        echo "missin or incorret what_ip/what_interface parameter"
     fi
 fi
 
