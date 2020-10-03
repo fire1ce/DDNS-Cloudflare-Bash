@@ -16,7 +16,7 @@ Cloudflare's options proxy and TTL configurable via the parameters.
 ## Installation
 
 ```bash
-wget https://raw.githubusercontent.com/fire1ce/cloudflareDDN/main/updateDNS.sh
+wget https://raw.githubusercontent.com/fire1ce/cloudflareDDNS-Bash/main/updateDNS.sh
 sudo chmod +x updateDNS.sh
 sudo mv updateDNS.sh /usr/local/bin/updateDNS
 ```
@@ -33,7 +33,6 @@ Update the config parameters at
 |----------------------|------------------------------------------|-----------------------------------------------------------|
 | what_ip              | internal                                 | Which IP should be used for the record: internal/external |
 | what_interface       | eth0                                     | For internal IP, provide interface name                   |
-| zone                 | example.com                              | Cloudflare Zone which holds the record                    |
 | dns_record           | ddns.example.com                         | DNS __A__ record which will be updated                    |
 | zoneid               | 8f340afd4f64f88d55fbe0b3a8813deb         | Cloudflare's Zone ID                                      |
 | proxied              | false                                    | Use Cloudflare proxy on dns record true/false             |
