@@ -5,7 +5,9 @@
 
 Cloudflare DDNS bash Script for most __Linux__ distributions and __MacOS__.  
 Choose any source IP address to update  __external__ or __internal__  _(WAN/LAN)_.  
-Cloudflare's options proxy and TTL configurable via the parameters.
+Cloudflare's options proxy and TTL configurable via the parameters.  
+_PowerShell Script for Windows can be found [here](https://github.com/fire1ce/cloudflareDDNS-PowerShell)_
+
 
 ## Requirements
 
