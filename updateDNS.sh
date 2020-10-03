@@ -7,7 +7,6 @@ export PATH=/sbin:/opt/bin:/usr/local/bin:/usr/contrib/bin:/bin:/usr/bin:/usr/sb
 ##### Config Params
 what_ip="external"                                              ##### Which IP should be used for the record: internal/external
 what_interface="eth0"                                           ##### For internal IP, provide interface name
-zone="example.com"                                              ##### Cloudflare Zone which holds the record
 dns_record="ddns.example.com"                                   ##### DNS A record which will be updated
 zoneid="8f340afd4__Change-ME__0a8813deb"                        ##### Cloudflare's Zone ID
 proxied="false"                                                 ##### Use Cloudflare proxy on dns record true/false
@@ -36,7 +35,7 @@ else
             ip=$(ifconfig ${what_interface} | grep 'inet ' | awk '{print $2}')
         fi
     else
-        echo "missin or incorret whichip parameter"
+        echo "missin or incorret what_ip parameter"
     fi
 fi
 
@@ -54,7 +53,7 @@ if [ ${dns_record_ip} == ${ip} ]; then
     echo "==> No changes needed! DNS Recored currently is set to $dns_record_ip"
     exit
 else
-    echo "==> Updating! DNS Recored currently is set to $dns_record_ip"
+    echo "==> DNS Recored currently is set to $dns_record_ip". Updating!!!
 fi
 
 ##### updates the dns record
