@@ -31,15 +31,15 @@ Update the config parameters at
 /usr/local/bin/updateDNS
 ```
 
-| __Option__           | __Example__                              | __Description__                                           |
-|----------------------|------------------------------------------|-----------------------------------------------------------|
-| what_ip              | internal                                 | Which IP should be used for the record: internal/external |
-| what_interface       | eth0                                     | For internal IP, provide interface name                   |
-| dns_record           | ddns.example.com                         | DNS __A__ record which will be updated                    |
-| zoneid               | 8f340afd4__Change-ME__0a8813deb          | Cloudflare's Zone ID                                      |
-| proxied              | false                                    | Use Cloudflare proxy on dns record true/false             |
-| ttl                  | 120                                      | 120-7200 in seconds or 1 for Auto                         |
-| cloudflare_api_token | x8AJcit__Change-ME__oDE_UkLo3XsoafAE3zZ4 | Cloudflare API Token __KEEP IT PRIVET!!!!__               |
+| __Option__           | __Example__      | __Description__                                           |
+| -------------------- | ---------------- | --------------------------------------------------------- |
+| what_ip              | internal         | Which IP should be used for the record: internal/external |
+| what_interface       | eth0             | For internal IP, provide interface name                   |
+| dns_record           | ddns.example.com | DNS __A__ record which will be updated                    |
+| zoneid               | ChangeMe         | Cloudflare's Zone ID                                      |
+| proxied              | false            | Use Cloudflare proxy on dns record true/false             |
+| ttl                  | 120              | 120-7200 in seconds or 1 for Auto                         |
+| cloudflare_api_token | ChangeMe         | Cloudflare API Token __KEEP IT PRIVET!!!!__               |
 
 ## Running The Script
 
