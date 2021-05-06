@@ -11,7 +11,9 @@ dns_record="ddns.example.com"   ##### DNS A record which will be updated
 zoneid="ChangeMe"               ##### Cloudflare's Zone ID
 proxied="false"                 ##### Use Cloudflare proxy on dns record true/false
 ttl=120                         ##### 120-7200 in seconds or 1 for Auto
-cloudflare_api_token="ChangeMe" ##### loudflare API Token keep it private!!!!
+cloudflare_api_token="ChangeMe" ##### Cloudflare API Token keep it private!!!!
+notify_me="no"                  ##### yes/no (yes requires mailutils package installed/configured)
+notify_email="email address"    ##### enter your email address (email is only sent if DNS is updated)
 
 ##### .updateDNS.log file of the last run for debug
 parent_path="$(dirname "${BASH_SOURCE[0]}")"
@@ -35,7 +37,7 @@ else
             ip=$(ifconfig ${what_interface} | grep 'inet ' | awk '{print $2}')
         fi
     else
-        echo "missin or incorret what_ip/what_interface parameter"
+        echo "missing or incorrect what_ip/what_interface parameter"
     fi
 fi
 
@@ -53,7 +55,7 @@ if [ ${dns_record_ip} == ${ip} ]; then
     echo "==> No changes needed! DNS Recored currently is set to $dns_record_ip"
     exit
 else
-    echo "==> DNS Recored currently is set to $dns_record_ip". Updating!!!
+    echo "==> DNS Record currently is set to $dns_record_ip". Updating!!!
 fi
 
 ##### updates the dns record
@@ -67,4 +69,7 @@ if [[ $update == *"\"success\":false"* ]]; then
     exit 1
 else
     echo "==> $dns_record DNS Record Updated To: $ip"
+    if [ $notify_me !=no ]; then
+        mail -s "ip address changed & DNS updated" $notify_email < /usr/local/bin/.updateDNS.log
+    fi
 fi
