@@ -55,7 +55,7 @@ You can run the script via crontab
 crontab -e
 ```
 
-Here are some Example
+Here are some Examples
 
 Run every minute
 
@@ -80,6 +80,23 @@ Run at 08:00
 ```bash
 0 8 * * * /usr/local/bin/updateDNS
 ```
+
+
+## Running the script frequently with cron, and only get an email when DNS is updated
+*This requires the package mailutils to be installed and a root user email configured.
+
+Once mailutils is installed and configured:
+
+set updateDNS script variable: update_me="yes"
+set updateDNS script variable: update_email="your@email.xyz" (this is the email you want to be notified of the DNS changes)
+
+Disable cron emails:
+$ sudo crontab -e
+
+```bash
+* * * * * /usr/local/bin/updateDNS >/dev/null 2>&1
+```
+
 
 ## Logs
 
