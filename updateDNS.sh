@@ -57,7 +57,7 @@ dns_record_info=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zo
 
 dns_record_ip=$(echo ${dns_record_info} | grep -o '"content":"[^"]*' | cut -d'"' -f4)
 
-if [ ${dns_record_ip} == ${ip} ]; then
+if [[ ${dns_record_ip} == ${ip} ]] || [[ -z "${ip}" ]]; then
   echo "==> No changes needed! DNS Recored currently is set to $dns_record_ip"
   exit
 else
