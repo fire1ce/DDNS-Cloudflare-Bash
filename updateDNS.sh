@@ -33,7 +33,7 @@ LOG_FILE=${parent_path}'/.updateDNS.log' #log file name
 exec > >(tee $LOG_FILE) 2>&1             # Writes STDOUT & STDERR as log file and prints to screen
 echo "==> $(date "+%Y-%m-%d %H:%M:%S")"
 
-##### Get the current IP addresss
+##### Get the current IP addresss of the interface
 if [ "${what_ip}" == "external" ]; then
   ip=$(curl -s -X GET https://checkip.amazonaws.com)
 else
@@ -48,24 +48,38 @@ else
   fi
 fi
 
-echo "==> Current IP is $ip"
+echo "==> Current IP is: $ip"
 
-##### get the dns record id and current ip from cloudflare's api
+#### function to get IP address from DNS server
+function get_ipaddr {
+  # use host command for DNS lookup operations
+  queryhost="host -t A ${dns_record} 1.1.1.1"
+  ${queryhost} &>/dev/null
+  if [ "$?" -eq "0" ]; then
+    # get ip address from dns server
+    ip_address="$(${queryhost} | awk '/has.*address/{print $NF; exit}')"
+    echo $ip_address
+  else
+    echo "Error resolving the domain!!!"
+    exit 1
+  fi
+}
+dns_record_ip="$(get_ipaddr)"
+
+if [[ ${dns_record_ip} == ${ip} ]] || [[ -z "${ip}" ]]; then
+  echo "==> No changes! DNS record of ${dns_record} is: $dns_record_ip"
+  exit
+else
+  echo "==> DNS record of ${dns_record} is: $dns_record_ip". Updating!!!
+fi
+
+##### updates the dns record
 dns_record_info=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?name=$dns_record" \
   -H "Authorization: Bearer $cloudflare_zone_api_token" \
   -H "Content-Type: application/json")
 
-dns_record_ip=$(echo ${dns_record_info} | grep -o '"content":"[^"]*' | cut -d'"' -f4)
-
-if [[ ${dns_record_ip} == ${ip} ]] || [[ -z "${ip}" ]]; then
-  echo "==> No changes needed! DNS Recored currently is set to $dns_record_ip"
-  exit
-else
-  echo "==> DNS Record currently is set to $dns_record_ip". Updating!!!
-fi
-
-##### updates the dns record
 dns_record_id=$(echo ${dns_record_info} | grep -o '"id":"[^"]*' | cut -d'"' -f4)
+
 update=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records/$dns_record_id" \
   -H "Authorization: Bearer $cloudflare_zone_api_token" \
   -H "Content-Type: application/json" \
