@@ -1,61 +1,75 @@
-# Cloudflare DDNS - Simple Bash Script
+# DDNS Cloudflare Bash Script
 
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/fire1ce/3os.org/tree/master/src)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://mit-license.org/)
 
-Cloudflare DDNS bash Script for most __Linux__ distributions and __MacOS__.  
-Choose any source IP address to update  __external__ or __internal__  _(WAN/LAN)_.  
-Cloudflare's options proxy and TTL configurable via the parameters.  
-_PowerShell Script for Windows can be found [here](https://github.com/fire1ce/cloudflareDDNS-PowerShell)_
+## About
+
+*   DDNS Cloudflare Bash Script for most __Linux__, __Unix__ distributions and __MacOS__.  
+*   Choose any source IP address to update  __external__ or __internal__  _(WAN/LAN)_.  
+*   For multiply lan interfaces like Wifi, Docker Networks and Bridges the script will automatically detects the primary Interface by priority.  
+*   Cloudflare's options proxy and TTL configurable via the config file.  
+*   Optional Telegram Notifications
 
 ## Requirements
 
 *   curl
-*   [api-token](https://dash.cloudflare.com/profile/api-tokens) with ZONE-DNS-EDIT Permissions
+*   Cloudflare [api-token](https://dash.cloudflare.com/profile/api-tokens) with ZONE-DNS-EDIT Permissions
 *   DNS Record must be pre created (api-token should only edit dns records)
 
 ## Installation
 
-```bash
-wget https://raw.githubusercontent.com/fire1ce/cloudflareDDNS-Bash/main/updateDNS.sh
-sudo chmod +x updateDNS.sh
-sudo mv updateDNS.sh /usr/local/bin/updateDNS
-```
+You can the script at any location manually.
 
-## Parameters
+__MacOS__: Don't use the _/usr/local/bin/_ for the script location. Create a separate folder under your user path _/Users/${USER}_  
 
-Update the config parameters at
+The automatic install examples below will place the script at _/usr/local/bin/_  
 
 ```bash
-/usr/local/bin/updateDNS
+wget https://raw.githubusercontent.com/fire1ce/DDNS-Cloudflare-Bash/main/update-cloudflare-dns.sh
+sudo chmod +x update-cloudflare-dns.sh
+sudo mv update-cloudflare-dns.sh /usr/local/bin/update-cloudflare-dns
 ```
+
+Place the __config__ file in the directory as the __update-cloudflare-dns__
+
+Config file download
+
+```bash
+wget https://raw.githubusercontent.com/fire1ce/DDNS-Cloudflare-Bash/main/update-cloudflare-dns.conf
+```
+
+## Config Parameters
 
 | __Option__                | __Example__      | __Description__                                           |
 | ------------------------- | ---------------- | --------------------------------------------------------- |
 | what_ip                   | internal         | Which IP should be used for the record: internal/external |
-| what_interface            | eth0             | For internal IP, provide interface name                   |
 | dns_record                | ddns.example.com | DNS __A__ record which will be updated                    |
+| cloudflare_zone_api_token | ChangeMe         | Cloudflare API Token __KEEP IT PRIVET!!!!__               |
 | zoneid                    | ChangeMe         | Cloudflare's Zone ID                                      |
 | proxied                   | false            | Use Cloudflare proxy on dns record true/false             |
 | ttl                       | 120              | 120-7200 in seconds or 1 for Auto                         |
-| cloudflare_zone_api_token | ChangeMe         | Cloudflare API Token __KEEP IT PRIVET!!!!__               |
 
 ### Optional Notifications Parameters
 
-| __Option__             | __Example__      | __Description__                                                 |
-| ---------------------- | ---------------- | --------------------------------------------------------------- |
-| notify_me_telegram     | yes              | Use Telegram notifications yes/no                               |
-| telegram_chat_id       | ChangeMe         | Chat ID of the bot                                              |
-| telegtam_bot_API_Token | ChangeMe         | Telegtam's Bot API Token                                        |
-| --                     | --               | --                                                              |
-| notify_me_email        | yes/no           | yes requires mailutils package installed/configured             |
-| notify_email           | ddns@example.com | enter your email address (email is only sent if DNS is updated) |
-
+| __Option__             | __Example__ | __Description__                   |
+| ---------------------- | ----------- | --------------------------------- |
+| notify_me_telegram     | yes         | Use Telegram notifications yes/no |
+| telegram_chat_id       | ChangeMe    | Chat ID of the bot                |
+| telegtam_bot_API_Token | ChangeMe    | Telegtam's Bot API Token          |
 
 ## Running The Script
 
+When placed in _/usr/local/bin/_
+
 ```bash
-updateDNS
+update-cloudflare-dns
+```
+
+Or manually
+
+```bash
+<path>/.update-cloudflare-dns.sh
 ```
 
 ## Automation With Crontab
@@ -66,56 +80,41 @@ You can run the script via crontab
 crontab -e
 ```
 
-Here are some Examples
+### Examples
 
 Run every minute
 
 ```bash
-* * * * * /usr/local/bin/updateDNS
+* * * * * /usr/local/bin/update-cloudflare-dns
 ```
 
 Run at boot
 
 ```bash
-@reboot /usr/local/bin/updateDNS
+@reboot /usr/local/bin/update-cloudflare-dns
 ```
 
-Run 1 minute fater boot
+Run 1 minute after boot
 
 ```bash
-@reboot sleep 60 && /usr/local/bin/updateDNS
+@reboot sleep 60 && /usr/local/bin/update-cloudflare-dns
 ```
 
 Run at 08:00
 
 ```bash
-0 8 * * * /usr/local/bin/updateDNS
+0 8 * * * /usr/local/bin/update-cloudflare-dns
 ```
-
-
-## Running the script frequently with cron, and only get an email when DNS is updated
-*This requires the package mailutils to be installed and a root user email configured.
-
-Once mailutils is installed and configured:
-
-set updateDNS script variable: update_me="yes"
-set updateDNS script variable: update_email="your@email.xyz" (this is the email you want to be notified of the DNS changes)
-
-Disable cron emails:
-$ sudo crontab -e
-
-```bash
-* * * * * /usr/local/bin/updateDNS >/dev/null 2>&1
-```
-
 
 ## Logs
 
 This Script will create a log file with __only__ the last run information
-Log file will be located at
+Log file will be located at the script's location.
+
+Example:
 
 ```bash
-/usr/local/bin/.updateDNS.log
+/usr/local/bin/update-cloudflare-dns.log
 ```
 
 ## License
