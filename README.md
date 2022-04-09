@@ -95,7 +95,7 @@ Run every minute
 Run every 2 minutes
 
 ```shell
-*/2 * * * *
+*/2 * * * * /usr/local/bin/update-cloudflare-dns
 ```
 
 Run at boot
