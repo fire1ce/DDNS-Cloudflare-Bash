@@ -5,54 +5,58 @@
 
 ## About
 
-*   DDNS Cloudflare Bash Script for most __Linux__, __Unix__ distributions and __MacOS__.  
-*   Choose any source IP address to update  __external__ or __internal__  _(WAN/LAN)_.  
-*   For multiply lan interfaces like Wifi, Docker Networks and Bridges the script will automatically detects the primary Interface by priority.  
-*   Cloudflare's options proxy and TTL configurable via the config file.  
-*   Optional Telegram Notifications
+- DDNS Cloudflare Bash Script for most **Linux**, **Unix** distributions and **MacOS**.
+- Choose any source IP address to update **external** or **internal** _(WAN/LAN)_.
+- For multiply lan interfaces like Wifi, Docker Networks and Bridges the script will automatically detects the primary Interface by priority.
+- Cloudflare's options proxy and TTL configurable via the config file.
+- Optional Telegram Notifications
 
 ## Requirements
 
-*   curl
-*   Cloudflare [api-token](https://dash.cloudflare.com/profile/api-tokens) with ZONE-DNS-EDIT Permissions
-*   DNS Record must be pre created (api-token should only edit dns records)
+- curl
+- Cloudflare [api-token](https://dash.cloudflare.com/profile/api-tokens) with ZONE-DNS-EDIT Permissions
+- DNS Record must be pre created (api-token should only edit dns records)
 
 ## Installation
 
-You can the script at any location manually.
+You can place the script at any location manually.
 
-__MacOS__: Don't use the _/usr/local/bin/_ for the script location. Create a separate folder under your user path _/Users/${USER}_  
+**MacOS**: Don't use the _/usr/local/bin/_ for the script location. Create a separate folder under your user path _/Users/${USER}_
 
-The automatic install examples below will place the script at _/usr/local/bin/_  
+The automatic install examples below will place the script at _/usr/local/bin/_
 
-```bash
+```shell
 wget https://raw.githubusercontent.com/fire1ce/DDNS-Cloudflare-Bash/main/update-cloudflare-dns.sh
 sudo chmod +x update-cloudflare-dns.sh
 sudo mv update-cloudflare-dns.sh /usr/local/bin/update-cloudflare-dns
 ```
 
-Place the __config__ file in the directory as the __update-cloudflare-dns__
-
 Config file download
 
-```bash
+```shell
 wget https://raw.githubusercontent.com/fire1ce/DDNS-Cloudflare-Bash/main/update-cloudflare-dns.conf
+```
+
+Place the **config** file in the directory as the **update-cloudflare-dns** for above example at _/usr/local/bin/_
+
+```shell
+sudo mv update-cloudflare-dns.conf /usr/local/bin/update-cloudflare-dns.conf
 ```
 
 ## Config Parameters
 
-| __Option__                | __Example__      | __Description__                                           |
+| **Option**                | **Example**      | **Description**                                           |
 | ------------------------- | ---------------- | --------------------------------------------------------- |
 | what_ip                   | internal         | Which IP should be used for the record: internal/external |
-| dns_record                | ddns.example.com | DNS __A__ record which will be updated                    |
-| cloudflare_zone_api_token | ChangeMe         | Cloudflare API Token __KEEP IT PRIVET!!!!__               |
+| dns_record                | ddns.example.com | DNS **A** record which will be updated                    |
+| cloudflare_zone_api_token | ChangeMe         | Cloudflare API Token **KEEP IT PRIVET!!!!**               |
 | zoneid                    | ChangeMe         | Cloudflare's Zone ID                                      |
 | proxied                   | false            | Use Cloudflare proxy on dns record true/false             |
 | ttl                       | 120              | 120-7200 in seconds or 1 for Auto                         |
 
 ### Optional Notifications Parameters
 
-| __Option__             | __Example__ | __Description__                   |
+| **Option**             | **Example** | **Description**                   |
 | ---------------------- | ----------- | --------------------------------- |
 | notify_me_telegram     | yes         | Use Telegram notifications yes/no |
 | telegram_chat_id       | ChangeMe    | Chat ID of the bot                |
@@ -62,13 +66,13 @@ wget https://raw.githubusercontent.com/fire1ce/DDNS-Cloudflare-Bash/main/update-
 
 When placed in _/usr/local/bin/_
 
-```bash
+```shell
 update-cloudflare-dns
 ```
 
 Or manually
 
-```bash
+```shell
 <path>/.update-cloudflare-dns.sh
 ```
 
@@ -76,7 +80,7 @@ Or manually
 
 You can run the script via crontab
 
-```bash
+```shell
 crontab -e
 ```
 
@@ -84,31 +88,37 @@ crontab -e
 
 Run every minute
 
-```bash
+```shell
 * * * * * /usr/local/bin/update-cloudflare-dns
+```
+
+Run every 2 minutes
+
+```shell
+*/2 * * * *
 ```
 
 Run at boot
 
-```bash
+```shell
 @reboot /usr/local/bin/update-cloudflare-dns
 ```
 
 Run 1 minute after boot
 
-```bash
+```shell
 @reboot sleep 60 && /usr/local/bin/update-cloudflare-dns
 ```
 
 Run at 08:00
 
-```bash
+```shell
 0 8 * * * /usr/local/bin/update-cloudflare-dns
 ```
 
 ## Logs
 
-This Script will create a log file with __only__ the last run information
+This Script will create a log file with **only** the last run information
 Log file will be located at the script's location.
 
 Example:
