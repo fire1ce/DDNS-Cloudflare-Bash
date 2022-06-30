@@ -127,6 +127,10 @@ Example:
 /usr/local/bin/update-cloudflare-dns.log
 ```
 
+## Limitations
+
+- Does not support IPv6
+
 ## License
 
 ### MIT License
