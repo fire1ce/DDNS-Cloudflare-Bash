@@ -17,7 +17,7 @@
 - Cloudflare [api-token](https://dash.cloudflare.com/profile/api-tokens) with ZONE-DNS-EDIT Permissions
 - DNS Record must be pre created (api-token should only edit dns records)
 
-### Creating Cloudflare API token
+### Creating Cloudflare API Token
 
 To create a CloudFlare API token for your DNS zone go to [https://dash.cloudflare.com/profile/api-tokens][cloudflare-api-token-url] and follow these steps:
 
@@ -25,7 +25,7 @@ To create a CloudFlare API token for your DNS zone go to [https://dash.cloudflar
 2. Select Create Custom Token
 3. Provide the token a name, for example, `example.com-dns-zone-readonly`
 4. Grant the token the following permissions:
-   - Zone - DNS - Read
+   - Zone - DNS - Edit
 5. Set the zone resources to:
    - Include - Specific Zone - `example.com`
 6. Complete the wizard and use the generated token at the `CLOUDFLARE_API_TOKEN` variable for the container
