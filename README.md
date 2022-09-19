@@ -63,7 +63,7 @@ sudo mv update-cloudflare-dns.conf /usr/local/bin/update-cloudflare-dns.conf
 | what_ip                   | internal         | Which IP should be used for the record: internal/external |
 | dns_record                | ddns.example.com | DNS **A** record which will be updated                    |
 | cloudflare_zone_api_token | ChangeMe         | Cloudflare API Token **KEEP IT PRIVET!!!!**               |
-| zoneid                    | ChangeMe         | Cloudflare's Zone ID                                      |
+| zoneid                    | ChangeMe         | Cloudflare's [Zone ID](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/) |
 | proxied                   | false            | Use Cloudflare proxy on dns record true/false             |
 | ttl                       | 120              | 120-7200 in seconds or 1 for Auto                         |
 
