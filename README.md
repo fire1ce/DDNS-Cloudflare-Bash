@@ -87,6 +87,12 @@ When placed in _/usr/local/bin/_
 update-cloudflare-dns
 ```
 
+With your config file (need to be placed in same folder)
+
+```shell
+update-cloudflare-dns yoru_config.conf
+```
+
 Or manually
 
 ```shell
@@ -107,6 +113,12 @@ Run every minute
 
 ```shell
 * * * * * /usr/local/bin/update-cloudflare-dns
+```
+
+Run with your specific config file
+
+```shell
+* * * * * /usr/local/bin/update-cloudflare-dns myconfig.conf
 ```
 
 Run every 2 minutes
