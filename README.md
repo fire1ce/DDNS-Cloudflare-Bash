@@ -44,7 +44,9 @@ sudo chmod +x update-cloudflare-dns.sh
 sudo mv update-cloudflare-dns.sh /usr/local/bin/update-cloudflare-dns
 ```
 
-Config file download
+## Config file
+
+You can use default config file _update-cloudflare-dns.conf_ or pass your own config file as parameter to script.
 
 ```shell
 wget https://raw.githubusercontent.com/fire1ce/DDNS-Cloudflare-Bash/main/update-cloudflare-dns.conf
@@ -56,13 +58,15 @@ Place the **config** file in the directory as the **update-cloudflare-dns** for 
 sudo mv update-cloudflare-dns.conf /usr/local/bin/update-cloudflare-dns.conf
 ```
 
+
+
 ## Config Parameters
 
 | **Option**                | **Example**      | **Description**                                           |
 | ------------------------- | ---------------- | --------------------------------------------------------- |
 | what_ip                   | internal         | Which IP should be used for the record: internal/external |
-| dns_record                | ddns.example.com | DNS **A** record which will be updated                    |
-| cloudflare_zone_api_token | ChangeMe         | Cloudflare API Token **KEEP IT PRIVET!!!!**               |
+| dns_record                | ddns.example.com | DNS **A** record which will be updated, you can pass multiple **A** records separated by comma                    |
+| cloudflare_zone_api_token | ChangeMe         | Cloudflare API Token **KEEP IT PRIVATE!!!!**               |
 | zoneid                    | ChangeMe         | Cloudflare's [Zone ID](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/) |
 | proxied                   | false            | Use Cloudflare proxy on dns record true/false             |
 | ttl                       | 120              | 120-7200 in seconds or 1 for Auto                         |
