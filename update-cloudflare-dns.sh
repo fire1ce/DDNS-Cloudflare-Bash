@@ -53,7 +53,7 @@ fi
 
 ### Get External ip from https://checkip.amazonaws.com
 if [ "${what_ip}" == "external" ]; then
-  ip=$(curl -s -X GET https://checkip.amazonaws.com --max-time 10)
+  ip=$(curl -4 -s -X GET https://checkip.amazonaws.com --max-time 10)
   if [ -z "$ip" ]; then
     echo "Error! Can't get external ip from https://checkip.amazonaws.com"
     exit 0
