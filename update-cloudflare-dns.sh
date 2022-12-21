@@ -96,17 +96,17 @@ do
       ### if no "nslookup" command use "host" command
       dns_record_ip=$(host -t A ${record} 1.1.1.1 | awk '/has address/ { print $4 }' | sed -n '1p')
     fi
-  
+
     if [ -z "$dns_record_ip" ]; then
       echo "Error! Can't resolve the ${record} via 1.1.1.1 DNS server"
       exit 0
     fi
     is_proxed="${proxied}"
   fi
-  
+
   ### Get the dns record id and current proxy status from cloudflare's api when proxied is "true"
   if [ "${proxied}" == "true" ]; then
-    dns_record_info=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?name=$record" \
+    dns_record_info=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$record" \
       -H "Authorization: Bearer $cloudflare_zone_api_token" \
       -H "Content-Type: application/json")
     if [[ ${dns_record_info} == *"\"success\":false"* ]]; then
@@ -117,18 +117,17 @@ do
     is_proxed=$(echo ${dns_record_info} | grep -o '"proxied":[^,]*' | grep -o '[^:]*$')
     dns_record_ip=$(echo ${dns_record_info} | grep -o '"content":"[^"]*' | cut -d'"' -f 4)
   fi
-  
+
   ### Check if ip or proxy have changed
-  
   if [ ${dns_record_ip} == ${ip} ] && [ ${is_proxed} == ${proxied} ]; then
     echo "==> DNS record IP of ${record} is ${dns_record_ip}", no changes needed.
     continue
   fi
-  
+
   echo "==> DNS record of ${record} is: ${dns_record_ip}. Trying to update..."
-  
+
   ### Get the dns record information from cloudflare's api
-  cloudflare_record_info=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?name=$record" \
+  cloudflare_record_info=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$record" \
     -H "Authorization: Bearer $cloudflare_zone_api_token" \
     -H "Content-Type: application/json")
   if [[ ${cloudflare_record_info} == *"\"success\":false"* ]]; then
@@ -136,10 +135,10 @@ do
     echo "Error! Can't get ${record} record inforamiton from cloudflare API"
     exit 0
   fi
-  
+
   ### Get the dns record id from response
   cloudflare_dns_record_id=$(echo ${cloudflare_record_info} | grep -o '"id":"[^"]*' | cut -d'"' -f4)
-  
+
   ### Push new dns record information to cloudflare's api
   update_dns_record=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records/$cloudflare_dns_record_id" \
     -H "Authorization: Bearer $cloudflare_zone_api_token" \
@@ -150,15 +149,15 @@ do
     echo "Error! Update Failed"
     exit 0
   fi
-  
+
   echo "==> Success!"
   echo "==> $record DNS Record Updated To: $ip, ttl: $ttl, proxied: $proxied"
-  
+
   ### Telegram notification
   if [ ${notify_me_telegram} == "no" ]; then
     exit 0
   fi
-  
+
   if [ ${notify_me_telegram} == "yes" ]; then
     telegram_notification=$(
       curl -s -X GET "https://api.telegram.org/bot${telegram_bot_API_Token}/sendMessage?chat_id=${telegram_chat_id}" --data-urlencode "text=${record} DNS record updated to: ${ip}"
