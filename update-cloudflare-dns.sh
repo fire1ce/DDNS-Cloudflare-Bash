@@ -20,7 +20,7 @@ if [[ -z "$1" ]]; then
     echo 'Error! Missing configuration file update-cloudflare-dns.conf or invalid syntax!'
     exit 0
   fi
-  else
+else
   if ! source ${parent_path}/"$1"; then
     echo 'Error! Missing configuration file '$1' or invalid syntax!'
     exit 0
@@ -82,11 +82,11 @@ if [ "${what_ip}" == "internal" ]; then
 fi
 
 ### Build coma separated array fron dns_record parameter to update multiple A records
-readarray -td '' dns_records < <(awk '{ gsub(/, /,"\0"); print; }' <<<"$dns_record, "); unset 'dns_records[-1]';
-declare dns_records;
+IFS=',' read -d '' -ra dns_records <<<"$dns_record,"
+unset 'dns_records[${#dns_records[@]}-1]'
+declare dns_records
 
-for record in "${dns_records[@]}"
-do
+for record in "${dns_records[@]}"; do
   ### Get IP address of DNS record from 1.1.1.1 DNS server when proxied is "false"
   if [ "${proxied}" == "false" ]; then
     ### Check if "nsloopup" command is present
