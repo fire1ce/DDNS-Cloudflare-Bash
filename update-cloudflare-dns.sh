@@ -13,7 +13,7 @@ LOG_FILE=${parent_path}'/update-cloudflare-dns.log'
 exec > >(tee $LOG_FILE) 2>&1
 echo "==> $(date "+%Y-%m-%d %H:%M:%S")"
 
-### Validate if config file exists
+### Validate if config-file exists
 
 if [[ -z "$1" ]]; then
   if ! source ${parent_path}/update-cloudflare-dns.conf; then
@@ -35,23 +35,23 @@ fi
 
 ### Check validity of "proxied" parameter
 if [ "${proxied}" != "false" ] && [ "${proxied}" != "true" ]; then
-  echo 'Error! Incorrect "proxied" parameter choose "true" or "false"'
+  echo 'Error! Incorrect "proxied" parameter, choose "true" or "false"'
   exit 0
 fi
 
 ### Check validity of "what_ip" parameter
 if [ "${what_ip}" != "external" ] && [ "${what_ip}" != "internal" ]; then
-  echo 'Error! Incorrect "what_ip" parameter choose "external" or "internal"'
+  echo 'Error! Incorrect "what_ip" parameter, choose "external" or "internal"'
   exit 0
 fi
 
 ### Check if set to internal ip and proxy
 if [ "${what_ip}" == "internal" ] && [ "${proxied}" == "true" ]; then
-  echo 'Error! Internal IP cannot be Proxied'
+  echo 'Error! Internal IP cannot be proxied'
   exit 0
 fi
 
-### Get External ip from https://checkip.amazonaws.com
+### Get external ip from https://checkip.amazonaws.com
 if [ "${what_ip}" == "external" ]; then
   ip=$(curl -4 -s -X GET https://checkip.amazonaws.com --max-time 10)
   if [ -z "$ip" ]; then
@@ -68,7 +68,7 @@ if [ "${what_ip}" == "internal" ]; then
     ### "ip route get" (linux)
     interface=$(ip route get 1.1.1.1 | awk '/dev/ { print $5 }')
     ip=$(ip -o -4 addr show ${interface} scope global | awk '{print $4;}' | cut -d/ -f 1)
-  ### if no "IP" command use "ifconfig", get the ip from interface
+  ### If no "ip" command use "ifconfig" instead, to get the ip from interface
   else
     ### "route get" (macOS, Freebsd)
     interface=$(route get 1.1.1.1 | awk '/interface:/ { print $2 }')
@@ -89,7 +89,7 @@ declare dns_records
 for record in "${dns_records[@]}"; do
   ### Get IP address of DNS record from 1.1.1.1 DNS server when proxied is "false"
   if [ "${proxied}" == "false" ]; then
-    ### Check if "nsloopup" command is present
+    ### Check if "nslookup" command is present
     if which nslookup >/dev/null; then
       dns_record_ip=$(nslookup ${record} 1.1.1.1 | awk '/Address/ { print $2 }' | sed -n '2p')
     else
@@ -104,14 +104,14 @@ for record in "${dns_records[@]}"; do
     is_proxed="${proxied}"
   fi
 
-  ### Get the dns record id and current proxy status from cloudflare's api when proxied is "true"
+  ### Get the dns record id and current proxy status from Cloudflare API when proxied is "true"
   if [ "${proxied}" == "true" ]; then
     dns_record_info=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$record" \
       -H "Authorization: Bearer $cloudflare_zone_api_token" \
       -H "Content-Type: application/json")
     if [[ ${dns_record_info} == *"\"success\":false"* ]]; then
       echo ${dns_record_info}
-      echo "Error! Can't get dns record info from cloudflare's api"
+      echo "Error! Can't get dns record info from Cloudflare API"
       exit 0
     fi
     is_proxed=$(echo ${dns_record_info} | grep -o '"proxied":[^,]*' | grep -o '[^:]*$')
@@ -126,32 +126,32 @@ for record in "${dns_records[@]}"; do
 
   echo "==> DNS record of ${record} is: ${dns_record_ip}. Trying to update..."
 
-  ### Get the dns record information from cloudflare's api
+  ### Get the dns record information from Cloudflare API
   cloudflare_record_info=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$record" \
     -H "Authorization: Bearer $cloudflare_zone_api_token" \
     -H "Content-Type: application/json")
   if [[ ${cloudflare_record_info} == *"\"success\":false"* ]]; then
     echo ${cloudflare_record_info}
-    echo "Error! Can't get ${record} record inforamiton from cloudflare API"
+    echo "Error! Can't get ${record} record information from Cloudflare API"
     exit 0
   fi
 
   ### Get the dns record id from response
   cloudflare_dns_record_id=$(echo ${cloudflare_record_info} | grep -o '"id":"[^"]*' | cut -d'"' -f4)
 
-  ### Push new dns record information to cloudflare's api
+  ### Push new dns record information to Cloudflare API
   update_dns_record=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records/$cloudflare_dns_record_id" \
     -H "Authorization: Bearer $cloudflare_zone_api_token" \
     -H "Content-Type: application/json" \
     --data "{\"type\":\"A\",\"name\":\"$record\",\"content\":\"$ip\",\"ttl\":$ttl,\"proxied\":$proxied}")
   if [[ ${update_dns_record} == *"\"success\":false"* ]]; then
     echo ${update_dns_record}
-    echo "Error! Update Failed"
+    echo "Error! Update failed"
     exit 0
   fi
 
   echo "==> Success!"
-  echo "==> $record DNS Record Updated To: $ip, ttl: $ttl, proxied: $proxied"
+  echo "==> $record DNS Record updated to: $ip, ttl: $ttl, proxied: $proxied"
 
   ### Telegram notification
   if [ ${notify_me_telegram} == "no" ]; then
