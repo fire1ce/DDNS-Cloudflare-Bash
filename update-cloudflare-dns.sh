@@ -151,7 +151,7 @@ for record in "${dns_records[@]}"; do
   fi
 
   echo "==> Success!"
-  echo "==> $record DNS Record updated o: $ip, ttl: $ttl, proxied: $proxied"
+  echo "==> $record DNS Record updated to: $ip, ttl: $ttl, proxied: $proxied"
 
   ### Telegram notification
   if [ ${notify_me_telegram} == "no" ]; then
