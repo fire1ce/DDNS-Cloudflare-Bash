@@ -31,3 +31,6 @@ Temporary Items
 
 # Logs
 *.log
+
+# specific config files
+update-cloudflare-dns_*.conf
