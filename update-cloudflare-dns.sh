@@ -78,19 +78,31 @@ fi
 
 ### Check validity of "proxied" parameter
 if [ "${proxied}" != "false" ] && [ "${proxied}" != "true" ]; then
-  echo 'Error! Incorrect "proxied" parameter, choose "true" or "false"'
+  had_error="true"
+  error_msg='Error! Incorrect "proxied" parameter, choose "true" or "false"'
+  echo $error_msg
+  email_notify
+  telegram_notify
   exit 0
 fi
 
 ### Check validity of "what_ip" parameter
 if [ "${what_ip}" != "external" ] && [ "${what_ip}" != "internal" ]; then
-  echo 'Error! Incorrect "what_ip" parameter, choose "external" or "internal"'
+  had_error="true"
+  error_msg='Error! Incorrect "what_ip" parameter, choose "external" or "internal"'
+  echo $error_msg
+  email_notify
+  telegram_notify
   exit 0
 fi
 
 ### Check if set to internal ip and proxy
 if [ "${what_ip}" == "internal" ] && [ "${proxied}" == "true" ]; then
-  echo 'Error! Internal IP cannot be proxied'
+  had_error="true"
+  error_msg='Error! Internal IP cannot be proxied'
+  echo $error_msg
+  email_notify
+  telegram_notify
   exit 0
 fi
 
@@ -98,7 +110,11 @@ fi
 if [ "${what_ip}" == "external" ]; then
   ip=$(curl -4 -s -X GET https://checkip.amazonaws.com --max-time 10)
   if [ -z "$ip" ]; then
-    echo "Error! Can't get external ip from https://checkip.amazonaws.com"
+    had_error="true"
+    error_msg="Error! Can't get external ip from https://checkip.amazonaws.com"
+    echo $error_msg
+    email_notify
+    telegram_notify
     exit 0
   fi
   echo "==> External IP is: $ip"
@@ -118,7 +134,11 @@ if [ "${what_ip}" == "internal" ]; then
     ip=$(ifconfig ${interface} | grep 'inet ' | awk '{print $2}')
   fi
   if [ -z "$ip" ]; then
-    echo "Error! Can't read ip from ${interface}"
+    had_error="true"
+    error_msg="Error! Can't read ip from ${interface}"
+    echo $error_msg
+    email_notify
+    telegram_notify
     exit 0
   fi
   echo "==> Internal ${interface} IP is: $ip"
@@ -141,7 +161,11 @@ for record in "${dns_records[@]}"; do
     fi
 
     if [ -z "$dns_record_ip" ]; then
-      echo "Error! Can't resolve the ${record} via 1.1.1.1 DNS server"
+      had_error="true"
+      error_msg="Error! Can't resolve the ${record} via 1.1.1.1 DNS server"
+      echo $error_msg
+      email_notify
+      telegram_notify
       exit 0
     fi
     is_proxed="${proxied}"
@@ -154,7 +178,11 @@ for record in "${dns_records[@]}"; do
       -H "Content-Type: application/json")
     if [[ ${dns_record_info} == *"\"success\":false"* ]]; then
       echo ${dns_record_info}
-      echo "Error! Can't get dns record info from Cloudflare API"
+      had_error="true"
+      error_msg="Error! Can't get dns record info from Cloudflare API"
+      echo $error_msg
+      email_notify
+      telegram_notify
       exit 0
     fi
     is_proxed=$(echo ${dns_record_info} | grep -o '"proxied":[^,]*' | grep -o '[^:]*$')
@@ -175,7 +203,11 @@ for record in "${dns_records[@]}"; do
     -H "Content-Type: application/json")
   if [[ ${cloudflare_record_info} == *"\"success\":false"* ]]; then
     echo ${cloudflare_record_info}
-    echo "Error! Can't get ${record} record information from Cloudflare API"
+    had_error="true"
+    error_msg="Error! Can't get ${record} record information from Cloudflare API"
+    echo $error_msg
+    email_notify
+    telegram_notify
     exit 0
   fi
 
