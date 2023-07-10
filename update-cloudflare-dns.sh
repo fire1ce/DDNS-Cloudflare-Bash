@@ -1,5 +1,45 @@
 #!/usr/bin/env bash
 
+### Initialize error catching variables
+error_msg=""
+had_error="false"
+
+### Email notification
+email_notify () {
+  local email_notification=""
+
+  if [ ${notify_me_email} == "yes" ]; then
+    if [ ${had_error} == "true" ]; then
+      email_notification=$(
+        echo "$HOSTNAME error ${error_msg}" |mailx -s "ddns update ${record} failure" ${to_email_address}
+      )
+    else
+      email_notification=$(
+        echo "$HOSTNAME updated ${record} DNS record from ${dns_record_ip} to: ${ip}" |mailx -s "ddns update ${record}" ${to_email_address}
+      )
+    fi
+    if [[ ${email_notification} == *"\"ok\":false"* ]]; then
+      echo ${email_notification}
+      echo "Error! Email notification failed"
+    fi
+  fi
+}
+
+### Telegram notification
+telegram_notify () {
+  local telegram_notification=""
+
+  if [ ${notify_me_telegram} == "yes" ]; then
+    telegram_notification=$(
+      curl -s -X GET "https://api.telegram.org/bot${telegram_bot_API_Token}/sendMessage?chat_id=${telegram_chat_id}" --data-urlencode "text=${record} DNS record updated to: ${ip}"
+    )
+    if [[ ${telegram_notification=} == *"\"ok\":false"* ]]; then
+      echo ${telegram_notification=}
+      echo "Error! Telegram notification failed"
+    fi
+  fi
+}
+
 ###  Create .update-cloudflare-dns.log file of the last run for debug
 parent_path="$(dirname "${BASH_SOURCE[0]}")"
 FILE=${parent_path}/update-cloudflare-dns.log
@@ -14,7 +54,6 @@ exec > >(tee $LOG_FILE) 2>&1
 echo "==> $(date "+%Y-%m-%d %H:%M:%S")"
 
 ### Validate if config-file exists
-
 if [[ -z "$1" ]]; then
   if ! source ${parent_path}/update-cloudflare-dns.conf; then
     echo 'Error! Missing configuration file update-cloudflare-dns.conf or invalid syntax!'
@@ -29,25 +68,41 @@ fi
 
 ### Check validity of "ttl" parameter
 if [ "${ttl}" -lt 120 ] || [ "${ttl}" -gt 7200 ] && [ "${ttl}" -ne 1 ]; then
-  echo "Error! ttl out of range (120-7200) or not set to 1"
-  exit
+  had_error="true"
+  error_msg="Error! ttl out of range (120-7200) or not set to 1"
+  echo $error_msg
+  email_notify
+  telegram_notify
+  exit 0
 fi
 
 ### Check validity of "proxied" parameter
 if [ "${proxied}" != "false" ] && [ "${proxied}" != "true" ]; then
-  echo 'Error! Incorrect "proxied" parameter, choose "true" or "false"'
+  had_error="true"
+  error_msg='Error! Incorrect "proxied" parameter, choose "true" or "false"'
+  echo $error_msg
+  email_notify
+  telegram_notify
   exit 0
 fi
 
 ### Check validity of "what_ip" parameter
 if [ "${what_ip}" != "external" ] && [ "${what_ip}" != "internal" ]; then
-  echo 'Error! Incorrect "what_ip" parameter, choose "external" or "internal"'
+  had_error="true"
+  error_msg='Error! Incorrect "what_ip" parameter, choose "external" or "internal"'
+  echo $error_msg
+  email_notify
+  telegram_notify
   exit 0
 fi
 
 ### Check if set to internal ip and proxy
 if [ "${what_ip}" == "internal" ] && [ "${proxied}" == "true" ]; then
-  echo 'Error! Internal IP cannot be proxied'
+  had_error="true"
+  error_msg='Error! Internal IP cannot be proxied'
+  echo $error_msg
+  email_notify
+  telegram_notify
   exit 0
 fi
 
@@ -55,7 +110,11 @@ fi
 if [ "${what_ip}" == "external" ]; then
   ip=$(curl -4 -s -X GET https://checkip.amazonaws.com --max-time 10)
   if [ -z "$ip" ]; then
-    echo "Error! Can't get external ip from https://checkip.amazonaws.com"
+    had_error="true"
+    error_msg="Error! Can't get external ip from https://checkip.amazonaws.com"
+    echo $error_msg
+    email_notify
+    telegram_notify
     exit 0
   fi
   echo "==> External IP is: $ip"
@@ -75,7 +134,11 @@ if [ "${what_ip}" == "internal" ]; then
     ip=$(ifconfig ${interface} | grep 'inet ' | awk '{print $2}')
   fi
   if [ -z "$ip" ]; then
-    echo "Error! Can't read ip from ${interface}"
+    had_error="true"
+    error_msg="Error! Can't read ip from ${interface}"
+    echo $error_msg
+    email_notify
+    telegram_notify
     exit 0
   fi
   echo "==> Internal ${interface} IP is: $ip"
@@ -98,7 +161,11 @@ for record in "${dns_records[@]}"; do
     fi
 
     if [ -z "$dns_record_ip" ]; then
-      echo "Error! Can't resolve the ${record} via 1.1.1.1 DNS server"
+      had_error="true"
+      error_msg="Error! Can't resolve the ${record} via 1.1.1.1 DNS server"
+      echo $error_msg
+      email_notify
+      telegram_notify
       exit 0
     fi
     is_proxed="${proxied}"
@@ -111,7 +178,11 @@ for record in "${dns_records[@]}"; do
       -H "Content-Type: application/json")
     if [[ ${dns_record_info} == *"\"success\":false"* ]]; then
       echo ${dns_record_info}
-      echo "Error! Can't get dns record info from Cloudflare API"
+      had_error="true"
+      error_msg="Error! Can't get dns record info from Cloudflare API"
+      echo $error_msg
+      email_notify
+      telegram_notify
       exit 0
     fi
     is_proxed=$(echo ${dns_record_info} | grep -o '"proxied":[^,]*' | grep -o '[^:]*$')
@@ -132,7 +203,11 @@ for record in "${dns_records[@]}"; do
     -H "Content-Type: application/json")
   if [[ ${cloudflare_record_info} == *"\"success\":false"* ]]; then
     echo ${cloudflare_record_info}
-    echo "Error! Can't get ${record} record information from Cloudflare API"
+    had_error="true"
+    error_msg="Error! Can't get ${record} record information from Cloudflare API"
+    echo $error_msg
+    email_notify
+    telegram_notify
     exit 0
   fi
 
@@ -146,26 +221,18 @@ for record in "${dns_records[@]}"; do
     --data "{\"type\":\"A\",\"name\":\"$record\",\"content\":\"$ip\",\"ttl\":$ttl,\"proxied\":$proxied}")
   if [[ ${update_dns_record} == *"\"success\":false"* ]]; then
     echo ${update_dns_record}
-    echo "Error! Update failed"
+    had_error="true"
+    error_msg="Error! Update failed"
+    echo $error_msg
+    email_notify
+    telegram_notify
     exit 0
   fi
 
   echo "==> Success!"
   echo "==> $record DNS Record updated to: $ip, ttl: $ttl, proxied: $proxied"
 
-  ### Telegram notification
-  if [ ${notify_me_telegram} == "no" ]; then
-    exit 0
-  fi
+  email_notify
+  telegram_notify
 
-  if [ ${notify_me_telegram} == "yes" ]; then
-    telegram_notification=$(
-      curl -s -X GET "https://api.telegram.org/bot${telegram_bot_API_Token}/sendMessage?chat_id=${telegram_chat_id}" --data-urlencode "text=${record} DNS record updated to: ${ip}"
-    )
-    if [[ ${telegram_notification=} == *"\"ok\":false"* ]]; then
-      echo ${telegram_notification=}
-      echo "Error! Telegram notification failed"
-      exit 0
-    fi
-  fi
 done

@@ -9,7 +9,7 @@
 - Choose any source IP address to update **external** or **internal** _(WAN/LAN)_.
 - For multiply lan interfaces like Wifi, Docker Networks and Bridges the script will automatically detects the primary Interface by priority.
 - Cloudflare's options proxy and TTL configurable via the config file.
-- Optional Telegram Notifications
+- Optional Email (using mailx) and Telegram Notifications
 
 ## Requirements
 
@@ -71,11 +71,13 @@ sudo mv update-cloudflare-dns.conf /usr/local/bin/update-cloudflare-dns.conf
 
 ### Optional Notifications Parameters
 
-| **Option**             | **Example** | **Description**                   |
-| ---------------------- | ----------- | --------------------------------- |
-| notify_me_telegram     | yes         | Use Telegram notifications yes/no |
-| telegram_chat_id       | ChangeMe    | Chat ID of the bot                |
-| telegram_bot_API_Token | ChangeMe    | Telegram's Bot API Token          |
+| **Option**             | **Example** | **Description**                    |
+| ---------------------- | ----------- | ---------------------------------- |
+| notify_me_email        | yes         | Use Email notifications yes/no     |
+| to_email_address       | ChangeMe    | Email address to send notification |
+| notify_me_telegram     | yes         | Use Telegram notifications yes/no  |
+| telegram_chat_id       | ChangeMe    | Chat ID of the bot                 |
+| telegram_bot_API_Token | ChangeMe    | Telegram's Bot API Token           |
 
 ## Running The Script
 
