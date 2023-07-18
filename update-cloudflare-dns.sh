@@ -51,11 +51,18 @@ if [ "${what_ip}" == "internal" ] && [ "${proxied}" == "true" ]; then
   exit 0
 fi
 
+### Valid IPv4 Regex
+REIP='^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])$'
+
 ### Get external ip from https://checkip.amazonaws.com
 if [ "${what_ip}" == "external" ]; then
   ip=$(curl -4 -s -X GET https://checkip.amazonaws.com --max-time 10)
   if [ -z "$ip" ]; then
     echo "Error! Can't get external ip from https://checkip.amazonaws.com"
+    exit 0
+  fi
+  if ! [[ "$ip" =~ $REIP ]]; then
+    echo "Error! IP Address returned was invalid!"
     exit 0
   fi
   echo "==> External IP is: $ip"
