@@ -68,6 +68,8 @@ sudo mv update-cloudflare-dns.conf /usr/local/bin/update-cloudflare-dns.conf
 | zoneid                    | ChangeMe         | Cloudflare's [Zone ID](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/) |
 | proxied                   | false            | Use Cloudflare proxy on dns record true/false                                                                             |
 | ttl                       | 120              | 120-7200 in seconds or 1 for Auto                                                                                         |
+| lookup_by_tag             | false            | Look up the records by comment instead of name                                                |
+| tag                       | ChangeMe         | Which comment to search for            |
 
 ### Optional Notifications Parameters
 

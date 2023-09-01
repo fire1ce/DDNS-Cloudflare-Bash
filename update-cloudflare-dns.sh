@@ -18,12 +18,12 @@ echo "==> $(date "+%Y-%m-%d %H:%M:%S")"
 if [[ -z "$1" ]]; then
   if ! source ${parent_path}/update-cloudflare-dns.conf; then
     echo 'Error! Missing configuration file update-cloudflare-dns.conf or invalid syntax!'
-    exit 0
+    exit 1
   fi
 else
   if ! source ${parent_path}/"$1"; then
     echo 'Error! Missing configuration file '$1' or invalid syntax!'
-    exit 0
+    exit 1
   fi
 fi
 
@@ -36,35 +36,41 @@ fi
 ### Check validity of "proxied" parameter
 if [ "${proxied}" != "false" ] && [ "${proxied}" != "true" ]; then
   echo 'Error! Incorrect "proxied" parameter, choose "true" or "false"'
-  exit 0
+  exit 1
+fi
+
+### Check validity of "proxied" parameter
+if [ "${lookup_by_tag}" != "false" ] && [ "${lookup_by_tag}" != "true" ]; then
+  echo 'Error! Incorrect "lookup_by_tag" parameter, choose "true" or "false"'
+  exit 1
 fi
 
 ### Check validity of "what_ip" parameter
 if [ "${what_ip}" != "external" ] && [ "${what_ip}" != "internal" ]; then
   echo 'Error! Incorrect "what_ip" parameter, choose "external" or "internal"'
-  exit 0
+  exit 1
 fi
 
 ### Check if set to internal ip and proxy
 if [ "${what_ip}" == "internal" ] && [ "${proxied}" == "true" ]; then
   echo 'Error! Internal IP cannot be proxied'
-  exit 0
+  exit 1
 fi
 
 ### Valid IPv4 Regex
-REIP='^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])$'
+#REIP='^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.){3}(25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])$'
 
 ### Get external ip from https://checkip.amazonaws.com
 if [ "${what_ip}" == "external" ]; then
   ip=$(curl -4 -s -X GET https://checkip.amazonaws.com --max-time 10)
   if [ -z "$ip" ]; then
     echo "Error! Can't get external ip from https://checkip.amazonaws.com"
-    exit 0
+    exit 1
   fi
-  if ! [[ "$ip" =~ $REIP ]]; then
-    echo "Error! IP Address returned was invalid!"
-    exit 0
-  fi
+#  if ! [[ "$ip" =~ $REIP ]]; then
+#    echo "Error! IP Address returned was invalid!"
+#    exit 1
+#  fi
   echo "==> External IP is: $ip"
 fi
 
@@ -83,15 +89,35 @@ if [ "${what_ip}" == "internal" ]; then
   fi
   if [ -z "$ip" ]; then
     echo "Error! Can't read ip from ${interface}"
-    exit 0
+    exit 1
   fi
   echo "==> Internal ${interface} IP is: $ip"
 fi
 
-### Build coma separated array fron dns_record parameter to update multiple A records
-IFS=',' read -d '' -ra dns_records <<<"$dns_record,"
-unset 'dns_records[${#dns_records[@]}-1]'
-declare dns_records
+if [ "${lookup_by_tag}" == "true" ]; then
+  ### Lookup all records matching the comment specified by $tag
+  matching_dns_records=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&comment=$tag" \
+     -H "Authorization: Bearer $cloudflare_zone_api_token" \
+     -H "Content-Type:application/json")
+  if [[ ${matching_dns_records} == *"\"success\":false"* ]]; then
+      echo ${matching_dns_records}
+      echo "Error! Can't get dns records from Cloudflare API"
+      exit 1
+    fi     
+    matching_dns_records=$(echo ${matching_dns_records} | grep -o '"name":"[^"]*",' | perl -pe 's/"name"://; s/^"//; s/",$//')
+  dns_records=()
+  while IFS= read -r dns_record
+  do
+    dns_records+=("$dns_record")
+  done <<< "$matching_dns_records"
+else
+  ### Build coma separated array fron dns_record parameter to update multiple A records
+  IFS=',' read -d '' -ra dns_records <<<"$dns_record,"
+  unset 'dns_records[${#dns_records[@]}-1]'
+  declare dns_records
+  echo $dns_records
+  exit 1
+fi
 
 for record in "${dns_records[@]}"; do
   ### Get IP address of DNS record from 1.1.1.1 DNS server when proxied is "false"
@@ -106,7 +132,7 @@ for record in "${dns_records[@]}"; do
 
     if [ -z "$dns_record_ip" ]; then
       echo "Error! Can't resolve the ${record} via 1.1.1.1 DNS server"
-      exit 0
+      exit 1
     fi
     is_proxed="${proxied}"
   fi
@@ -119,7 +145,7 @@ for record in "${dns_records[@]}"; do
     if [[ ${dns_record_info} == *"\"success\":false"* ]]; then
       echo ${dns_record_info}
       echo "Error! Can't get dns record info from Cloudflare API"
-      exit 0
+      exit 1
     fi
     is_proxed=$(echo ${dns_record_info} | grep -o '"proxied":[^,]*' | grep -o '[^:]*$')
     dns_record_ip=$(echo ${dns_record_info} | grep -o '"content":"[^"]*' | cut -d'"' -f 4)
@@ -140,7 +166,7 @@ for record in "${dns_records[@]}"; do
   if [[ ${cloudflare_record_info} == *"\"success\":false"* ]]; then
     echo ${cloudflare_record_info}
     echo "Error! Can't get ${record} record information from Cloudflare API"
-    exit 0
+    exit 1
   fi
 
   ### Get the dns record id from response
@@ -154,7 +180,7 @@ for record in "${dns_records[@]}"; do
   if [[ ${update_dns_record} == *"\"success\":false"* ]]; then
     echo ${update_dns_record}
     echo "Error! Update failed"
-    exit 0
+    exit 1
   fi
 
   echo "==> Success!"
@@ -162,7 +188,7 @@ for record in "${dns_records[@]}"; do
 
   ### Telegram notification
   if [ ${notify_me_telegram} == "no" ]; then
-    exit 0
+    exit 1
   fi
 
   if [ ${notify_me_telegram} == "yes" ]; then
@@ -172,7 +198,8 @@ for record in "${dns_records[@]}"; do
     if [[ ${telegram_notification=} == *"\"ok\":false"* ]]; then
       echo ${telegram_notification=}
       echo "Error! Telegram notification failed"
-      exit 0
+      exit 1
     fi
-  fi
+  fi 
 done
+exit 0
