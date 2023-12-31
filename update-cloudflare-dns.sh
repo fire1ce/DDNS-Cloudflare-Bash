@@ -161,10 +161,6 @@ for record in "${dns_records[@]}"; do
   echo "==> $record DNS Record updated to: $ip, ttl: $ttl, proxied: $proxied"
 
   ### Telegram notification
-  if [ ${notify_me_telegram} == "no" ]; then
-    exit 0
-  fi
-
   if [ ${notify_me_telegram} == "yes" ]; then
     telegram_notification=$(
       curl -s -X GET "https://api.telegram.org/bot${telegram_bot_API_Token}/sendMessage?chat_id=${telegram_chat_id}" --data-urlencode "text=${record} DNS record updated to: ${ip}"
@@ -175,4 +171,17 @@ for record in "${dns_records[@]}"; do
       exit 0
     fi
   fi
+
+  ### Discord notification
+  if [ ${notify_me_discord} == "yes" ]; then
+    discord_notification=$(
+      curl -s -H "Content-Type: application/json" -d "{\"username\": \"Cloudflare DDNS\", \"content\": \"$record DNS record updated to: $ip\"}" "$discord_webhook_url"
+    )
+    if [[ ${discord_notification=} == *"\"message\":"* ]]; then
+      echo ${discord_notification=}
+      echo "Error! Discord notification failed"
+      exit 0
+    fi
+  fi
+  exit 0
 done
