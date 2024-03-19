@@ -162,7 +162,7 @@ for record in "${dns_records[@]}"; do
 
   ### Telegram notification
   if [ ${notify_me_telegram} == "no" ]; then
-    exit 0
+    continue
   fi
 
   if [ ${notify_me_telegram} == "yes" ]; then
