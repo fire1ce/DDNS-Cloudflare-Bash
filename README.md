@@ -32,6 +32,9 @@ To create a CloudFlare API token for your DNS zone go to [https://dash.cloudflar
 
 ## Installation
 
+> [!tip]
+> This [article](https://diyaagrams.com/Cloudflare/DDNS-Cloudflare-Bash-Documentation/DDNS-Cloudflare-bash) has an easier explanation for deploying this script.
+
 You can place the script at any location manually.
 
 **MacOS**: Don't use the _/usr/local/bin/_ for the script location. Create a separate folder under your user path _/Users/${USER}_
